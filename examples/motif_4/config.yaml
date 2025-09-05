@@ -1,0 +1,36 @@
+simulation:
+  steps: 100
+  state_dim: 1024
+  read_size_bytes: 1048576      # 1 MiB pre-step read
+  write_size_bytes: 1048576     # 1 MiB post-step write
+  device: "cpu"                 # "cpu" or "gpu"
+  sleep_ms: 0
+
+assimilation:
+  window: 4
+  device: "cpu"
+  emit_every: 1
+
+training:
+  device: "cpu"
+  train_every: 5
+  model_dim: 512
+  use_collective: false
+  collective_bytes: 4194304      # emulate AllReduce volume
+
+inference:
+  device: "cpu"
+  copy_bytes: 2097152
+  vec_len: 1000000
+
+control:
+  device: "cpu"
+  policy_cost: 65536             # ~256x256 matmul
+
+queues:
+  sim_to_assim: 8
+  assim_to_train: 8
+  assim_to_infer: 8
+  train_to_infer: 4
+  infer_to_control: 8
+  control_to_sim: 4
