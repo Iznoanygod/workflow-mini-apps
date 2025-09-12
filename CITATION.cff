@@ -1,0 +1,55 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: RADICAL Workflow Mini-App Framework
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - name: RADICAL-Cybertools
+identifiers:
+  - type: other
+    value: "https://arxiv.org/abs/2403.18073"
+repository-code: "https://github.com/radical-cybertools/workflow-mini-apps"
+abstract: >-
+  The Workflow Mini-App framework provides the environment
+  to build compact, self-contained applications that emulate
+  key aspects of larger scientific workflows, enabling
+  researchers to explore, test, and optimize computational
+  tasks without running the full-scale workflow. By
+  leveraging RADICAL tools, such as RADICAL-EnTK (for
+  workflow orchestration) and RADICAL-Pilot (for dynamic
+  resource management), these WF MiniApps can efficiently
+  schedule and execute multiple heterogeneous tasks across
+  HPC systems, clusters, or cloud infrastructures.
+license: MIT
+preferred-citation:
+  type: conference-paper
+  title: "Workflow Mini-Apps: Portable, Scalable, Tunable & Faithful Representations of Scientific Workflows"
+  authors:
+  - family-names: "Kilic"
+    given-names: "Ozgur O."
+  - family-names: "Wang"
+    given-names: "Tianle"
+  - family-names: "Turilli"
+    given-names: "Matteo"
+  - family-names: "Titov"
+    given-names: "Mikhail"
+  - family-names: "Merzky"
+    given-names: "Andre"
+  - family-names: "Pouchard"
+    given-names: "Line"
+  - family-names: "Jha"
+    given-names: "Shantenu"
+  start: 465 # First page number
+  end: 477 # Last page number
+  year: 2024
+  doi: "10.1109/CCGrid59990.2024.00059"
+  publisher:
+    name: "IEEE Computer Society"
+  collection-title: "2024 IEEE 24th International Symposium on Cluster, Cloud and Internet Computing (CCGrid)"
+  collection-type: proceedings
+  conference:
+    name: "IEEE/ACM International Symposium on Cluster, Cloud and Internet Computing"
