@@ -49,13 +49,13 @@ async def workflow(cfg):
         kern.matMulSimple2D(device=device, dim=matmul_dim)
         kern.writeNonMPI(nbytes=write_size)
 
-        # fake objective: lower is better
         obj = 1.0 / (1.0 + matmul_dim) + random.random() * 0.01
         res = {"objective": obj}
         return res
     
     @flow.function_task
     async def select():
+        # TODO write selection task
         return None
     
     @flow.function_task
