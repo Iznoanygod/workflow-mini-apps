@@ -31,7 +31,7 @@ async def workflow(cfg):
 
         kern.writeNonMPI(nbytes=write_size)
 
-        msg = {"t": step, "state_dim": state_dim, "ctrl": ctrl}
+        msg = {"state_dim": state_dim}
 
         if sleep_ms > 0:
             await asyncio.sleep(sleep_ms / 1000.0)

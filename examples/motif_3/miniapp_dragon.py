@@ -1,16 +1,12 @@
-import argparse, asyncio, yaml, random
+import argparse, asyncio, yaml, random, logging
 from utils.metrics import Timer, log
 
 from radical.asyncflow import WorkflowEngine
-from radical.asyncflow import ConcurrentExecutionBackend
+from radical.asyncflow import DragonExecutionBackend
+from radical.asyncflow.logging import init_default_logger
 
 from wfMiniAPI import kernel as kern
 
-from stages.sim_stage import SimulationStage
-from stages.assimilate_stage import AssimilationStage
-from stages.train_stage import TrainingStage
-from stages.infer_stage import InferenceStage
-from stages.control_stage import ControlStage
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -18,7 +14,10 @@ def load_cfg(path):
     with open(path, "r") as f: return yaml.safe_load(f)
 
 async def workflow(cfg):
-    backend = await ConcurrentExecutionBackend(ThreadPoolExecutor())
+    logger = logging.getLogger(__name__)
+    init_default_logger(logging.DEBUG)
+    backend = await DragonExecutionBackend()
+    init_default_logger(logging.DEBUG)
     flow = await WorkflowEngine.create(backend=backend)
 
     @flow.function_task
