@@ -51,7 +51,7 @@ async def workflow(cfg):
         log(time.strftime("%H:%M:%S", time.localtime()))
         kern.readNonMPI(num_bytes=read_size, data_root_dir="./")
         kern.generateRandomNumber(device=device, size=matmul_dim)
-        for i in range(steps):
+        for _ in range(steps):
             kern.matMulSimple2D(device=device, size=matmul_dim)
         if i == 0:
             kern.writeNonMPI(num_bytes=write_size, data_root_dir="./tmp")
@@ -62,6 +62,7 @@ async def workflow(cfg):
     @flow.function_task
     async def training(simulation, experiment):
         e = cfg["training"]
+        steps = e["steps"]
         read_size = e["read_size_bytes"]
         write_size = e["write_size_bytes"]
         copy_size = e["data_copy_size_bytes"]
@@ -71,7 +72,7 @@ async def workflow(cfg):
         log(time.strftime("%H:%M:%S", time.localtime()))
         kern.readNonMPI(num_bytes=read_size, data_root_dir="./")
         kern.dataCopyH2D(data_size=copy_size)
-        for i in range(6):
+        for i in range(steps):
             kern.matMulSimple2D(device="gpu", size=matmul_dim)
             kern.matMulSimple2D(device="cpu", size=matmul_dim)
         kern.dataCopyH2D(data_size=copy_size)
@@ -98,7 +99,7 @@ async def workflow(cfg):
             kern.matMulSimple2D(device="cpu", size=matmul_dim)
         kern.dataCopyH2D(data_size=copy_size)
         kern.writeNonMPI(num_bytes=write_size, data_root_dir="./")
-        log(f"Finished training model with evaluation results...")
+        log(f"Finished inferencing model with evaluation results...")
         log(time.strftime("%H:%M:%S", time.localtime()))
         return random.random()
 
