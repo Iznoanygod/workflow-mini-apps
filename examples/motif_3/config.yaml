@@ -1,32 +1,12 @@
-propose:
-  rounds: 10
-  batch_size: 16
-  device: "cpu"          # "cpu" or "gpu"
-  vec_len: 1000000       # emulate vectorized param proposals
-  copy_bytes: 2097152    # 2 MiB H2D/D2H around proposals
-
-evaluate:
+simulate:
   device: "cpu"
-  read_size_bytes: 1048576
-  write_size_bytes: 1048576
-  matmul_dim: 512
-  workers: 4             # parallel evaluators
+  read_size_bytes: 4294967296
+  write_size_bytes: 1073741824
+  matmul_dim: 8192
 
 training:
   device: "cpu"
-  model_dim: 512
-  train_every: 8
-  use_collective: false
-  collective_bytes: 4194304
-
-select:
-  device: "cpu"
-  top_k: 5
-  emit_every: 8
-  policy_cost: 65536     # ~256x256 matmul for re-scoring
-
-queues:
-  candidates: 64
-  results: 128
-  models: 16
-  feedback: 32
+  read_size_bytes: 1342177280
+  write_size_bytes: 512
+  data_copy_size_bytes: 2097152
+  matmul_dim: 8192
