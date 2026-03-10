@@ -1,12 +1,16 @@
 import argparse, asyncio, yaml, random, logging
 import time
-from utils.metrics import Timer, log
 
 from radical.asyncflow import WorkflowEngine
 from radical.asyncflow import DragonExecutionBackend
 from radical.asyncflow.logging import init_default_logger
 
 from wfMiniAPI import kernel as kern
+
+class Timer:
+    def __init__(self): self.t0 = None
+    def start(self): self.t0 = time.time(); return self
+    def stop(self): return time.time() - self.t0
 
 def load_cfg(path): 
     with open(path, "r") as f: return yaml.safe_load(f)
@@ -15,7 +19,6 @@ async def workflow(cfg):
     logger = logging.getLogger(__name__)
     init_default_logger(logging.DEBUG)
     backend = await DragonExecutionBackend()
-    init_default_logger(logging.DEBUG)
     flow = await WorkflowEngine.create(backend=backend)
     
     @flow.function_task
@@ -27,19 +30,19 @@ async def workflow(cfg):
         write_size = e["write_size_bytes"]
         matmul_dim = e["matmul_dim"]
 
-        log(f"Simulating candidate with params...")
-        log(time.strftime("%H:%M:%S", time.localtime()))
+        logger.info(f"Simulating with params...")
+        logger.info(time.strftime("%H:%M:%S", time.localtime()))
         kern.generateRandomNumber(device=device, size=matmul_dim)
         for i in range(steps):
             kern.matMulSimple2D(device=device, size=matmul_dim)
         kern.writeNonMPI(num_bytes=write_size, data_root_dir="./")
         kern.readNonMPI(num_bytes=read_size, data_root_dir="./")
-        log(f"Finished simulating candidate with params...")
-        log(time.strftime("%H:%M:%S", time.localtime()))
+        logger.info(f"Finished simulating with params...")
+        logger.info(time.strftime("%H:%M:%S", time.localtime()))
         return random.random()
 
     @flow.function_task
-    async def train(res):
+    async def train(_sim=None):
         e = cfg["training"]
         steps = e["steps"]
         device = e["device"]
@@ -48,8 +51,8 @@ async def workflow(cfg):
         copy_size = e["data_copy_size_bytes"]
         matmul_dim = e["matmul_dim"]
 
-        log(f"Training model with evaluation results...")
-        log(time.strftime("%H:%M:%S", time.localtime()))
+        logger.info(f"Training model with evaluation results...")
+        logger.info(time.strftime("%H:%M:%S", time.localtime()))
         kern.readNonMPI(num_bytes=read_size, data_root_dir="./")
         kern.dataCopyH2D(data_size=copy_size)
         for i in range(steps):
@@ -57,8 +60,8 @@ async def workflow(cfg):
             kern.matMulSimple2D(device="cpu", size=matmul_dim)
         kern.dataCopyH2D(data_size=copy_size)
         kern.writeNonMPI(num_bytes=write_size, data_root_dir="./")
-        log(f"Finished training model with evaluation results...")
-        log(time.strftime("%H:%M:%S", time.localtime()))
+        logger.info(f"Finished training model with evaluation results...")
+        logger.info(time.strftime("%H:%M:%S", time.localtime()))
         return random.random()
 
     for i in range(3):
@@ -74,4 +77,4 @@ if __name__ == "__main__":
     cfg = load_cfg(args.config)
     t = Timer().start()
     asyncio.run(workflow(cfg))
-    log(f"DONE in {t.stop():.3f}s")
+    print(f"DONE in {t.stop():.3f}s")

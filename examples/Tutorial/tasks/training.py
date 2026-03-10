@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument('--batch_size', type=int, default=64,
                         help='batch size in training')
     parser.add_argument('--device', default='gpu',
-                        help='Wheter this is running on cpu or gpu')
+                        help='Whether this is running on cpu or gpu')
     parser.add_argument('--dense_dim_in', type=int, default=2048,
                         help='dim for most heavy dense layer, input')
     parser.add_argument('--dense_dim_out', type=int, default=512,
