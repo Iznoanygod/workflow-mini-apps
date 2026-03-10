@@ -21,6 +21,7 @@ async def workflow(cfg):
     @flow.function_task
     async def simulate():
         e = cfg["simulate"]
+        steps = e["steps"]
         device = e["device"]
         read_size = e["read_size_bytes"]
         write_size = e["write_size_bytes"]
@@ -29,7 +30,7 @@ async def workflow(cfg):
         log(f"Simulating candidate with params...")
         log(time.strftime("%H:%M:%S", time.localtime()))
         kern.generateRandomNumber(device=device, size=matmul_dim)
-        for i in range(8):
+        for i in range(steps):
             kern.matMulSimple2D(device=device, size=matmul_dim)
         kern.writeNonMPI(num_bytes=write_size, data_root_dir="./")
         kern.readNonMPI(num_bytes=read_size, data_root_dir="./")
@@ -40,6 +41,7 @@ async def workflow(cfg):
     @flow.function_task
     async def train(res):
         e = cfg["training"]
+        steps = e["steps"]
         device = e["device"]
         read_size = e["read_size_bytes"]
         write_size = e["write_size_bytes"]
@@ -50,7 +52,7 @@ async def workflow(cfg):
         log(time.strftime("%H:%M:%S", time.localtime()))
         kern.readNonMPI(num_bytes=read_size, data_root_dir="./")
         kern.dataCopyH2D(data_size=copy_size)
-        for i in range(6):
+        for i in range(steps):
             kern.matMulSimple2D(device="gpu", size=matmul_dim)
             kern.matMulSimple2D(device="cpu", size=matmul_dim)
         kern.dataCopyH2D(data_size=copy_size)
