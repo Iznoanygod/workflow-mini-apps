@@ -1,8 +1,9 @@
 import argparse, asyncio, yaml, random, logging
 import time
 
+from rhapsody.backends import DragonExecutionBackendV3
+
 from radical.asyncflow import WorkflowEngine
-from radical.asyncflow import DragonExecutionBackend
 from radical.asyncflow.logging import init_default_logger
 
 from wfMiniAPI import kernel as kern
@@ -16,9 +17,16 @@ def load_cfg(path):
     with open(path, "r") as f: return yaml.safe_load(f)
 
 async def workflow(cfg):
+    import multiprocessing as mp
     logger = logging.getLogger(__name__)
     init_default_logger(logging.DEBUG)
-    backend = await DragonExecutionBackend()
+
+    # Create Dragon Batch backend (1 nodes with 32 workers)
+    nodes = 1
+    backend = await DragonExecutionBackendV3(
+        num_workers=nodes * mp.cpu_count(),
+        disable_background_batching=False,
+    )
     flow = await WorkflowEngine.create(backend=backend)
     
     @flow.function_task

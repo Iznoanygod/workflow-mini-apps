@@ -2,4 +2,6 @@ numpy
 h5py
 mpi4py
 radical-pilot
-ROSE @ git+https://github.com/radical-cybertools/ROSE.git
+radical-asyncflow
+dragonhpc
+rhapsody-py[all]
