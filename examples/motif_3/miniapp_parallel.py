@@ -20,9 +20,10 @@ async def workflow(cfg):
     import multiprocessing as mp
     logger = logging.getLogger(__name__)
     init_default_logger(logging.DEBUG)
-
+    
     # Create Dragon Batch backend (1 nodes with 32 workers)
     nodes = 1
+    mp.set_start_method("dragon")
     backend = await DragonExecutionBackendV3(
         num_workers=nodes * mp.cpu_count(),
         disable_background_batching=False,
