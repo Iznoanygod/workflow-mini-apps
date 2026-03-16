@@ -42,7 +42,7 @@ async def workflow(cfg):
         logger.info(f"Experiment Data...")
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
         kern.generateRandomNumber(device=device, size=matmul_dim)
-        for i in range(steps):
+        for j in range(steps):
             kern.matMulSimple2D(device=device, size=matmul_dim)
         kern.writeNonMPI(num_bytes=write_size, data_root_dir="./")
         kern.readNonMPI(num_bytes=read_size, data_root_dir="./")
@@ -51,7 +51,7 @@ async def workflow(cfg):
         return random.random()
     
     @flow.function_task
-    async def simulation(i):
+    async def simulation(i, _experiment):
         e = cfg["simulation"]
         steps = e["steps"]
         read_size = e["read_size_bytes"]
@@ -66,13 +66,13 @@ async def workflow(cfg):
         for _ in range(steps):
             kern.matMulSimple2D(device=device, size=matmul_dim)
         if i == 0:
-            kern.writeNonMPI(num_bytes=write_size, data_root_dir="./tmp")
+            kern.writeNonMPI(num_bytes=write_size, data_root_dir="./")
         logger.info(f"Finished simulating...")
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
         return random.random()
     
     @flow.function_task
-    async def training(_simulation, _experiment):
+    async def training():
         e = cfg["training"]
         steps = e["steps"]
         read_size = e["read_size_bytes"]
@@ -82,19 +82,19 @@ async def workflow(cfg):
 
         logger.info(f"Training model with simulation results...")
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
+        kern.writeNonMPI(num_bytes=write_size, data_root_dir="./")
         kern.readNonMPI(num_bytes=read_size, data_root_dir="./")
         kern.dataCopyH2D(data_size=copy_size)
         for i in range(steps):
             kern.matMulSimple2D(device="gpu", size=matmul_dim)
             kern.matMulSimple2D(device="cpu", size=matmul_dim)
         kern.dataCopyH2D(data_size=copy_size)
-        kern.writeNonMPI(num_bytes=write_size, data_root_dir="./")
         logger.info(f"Finished training model with evaluation results...")
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
         return random.random()
 
     @flow.function_task
-    async def inference(_training=None):
+    async def inference(_training):
         e = cfg["inference"]
         steps = e["steps"]
         read_size = e["read_size_bytes"]
@@ -115,13 +115,13 @@ async def workflow(cfg):
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
         return random.random()
 
-    for i in range(3):
-        experiment_t = await experiment()
+    for j in range(3):
         sim_t = []
+        experiment_t = experiment()
         for i in range(32):
-            sim_t.append(simulation(i))
+            sim_t.append(simulation(i, experiment_t))
         await asyncio.gather(*sim_t)
-        train_t = training(sim_t, experiment_t)
+        train_t = training()
         infer_t = await inference(train_t)
 
     await flow.shutdown()
