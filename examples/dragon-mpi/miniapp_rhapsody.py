@@ -39,7 +39,9 @@ async def workflow(cfg):
 
     s1 = cfg["stage1"]
     @flow.function_task
-    async def stage1(task_description={'ranks': s1['ranks'], 'type': 'mpi'}, *args):
+    async def stage1(task_backend_specific_kwargs={
+        "process_templates": [(2, {}), (2, {})] 
+    }, *args):
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
         import mpi4py
         from mpi4py import MPI
@@ -54,11 +56,11 @@ async def workflow(cfg):
         device = s1["device"]
         matmul_dim = s1["matmul_dim"]
         
-        kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
+        #kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
         kern.generateRandomNumber(device=device, size=matmul_dim)
         for j in range(steps):
             kern.matMulSimple2D(device=device, size=matmul_dim)
-        kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
+        #kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
         logger.info(f"Finished stage 1...")
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
         return random.random()
@@ -81,11 +83,11 @@ async def workflow(cfg):
         device = s2["device"]
         matmul_dim = s2["matmul_dim"]
 
-        kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
+        #kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
         kern.generateRandomNumber(device=device, size=matmul_dim)
         for _ in range(steps):
             kern.matMulSimple2D(device=device, size=matmul_dim)
-        kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
+        #kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
         logger.info(f"Finished stage 2...")
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
         return random.random()
@@ -107,13 +109,13 @@ async def workflow(cfg):
         copy_size = s3["data_copy_size_bytes"]
         matmul_dim = s3["matmul_dim"]
 
-        kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
+        #kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
         kern.dataCopyH2D(data_size=copy_size)
         for i in range(steps):
             kern.matMulSimple2D(device="gpu", size=matmul_dim)
             kern.matMulSimple2D(device="cpu", size=matmul_dim)
         kern.dataCopyH2D(data_size=copy_size)
-        kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
+        #kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
         logger.info(f"Finished stage 3...")
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
         return random.random()
@@ -136,13 +138,13 @@ async def workflow(cfg):
         matmul_dim = s4["matmul_dim"]
 
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
-        kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
+        #kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
         kern.dataCopyH2D(data_size=copy_size)
         for i in range(steps):
             kern.matMulSimple2D(device="gpu", size=matmul_dim)
             kern.matMulSimple2D(device="cpu", size=matmul_dim)
         kern.dataCopyH2D(data_size=copy_size)
-        kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
+        #kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
         logger.info(f"Finished stage 4...")
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
         return random.random()

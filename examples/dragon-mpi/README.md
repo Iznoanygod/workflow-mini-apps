@@ -3,16 +3,19 @@ This example goes over launching MPI tasks
 ## First load the proper modules
 
 ### Load cray-mpich-abi
-`$ module load cray-mpich-abi/8.1.32`
+`$ module load cray-mpich-abi`
 
 ### Load cuda toolkit
-`$ module load cudatoolkit/25.3_12.8`
+`$ module load cudatoolkit`
+
+### Load h5py with MPI support
+`$ module load cray-hdf5`
 
 ### If using a venv, load the venv now
 `$ source path_to_venv/bin/activate`
 
 ### Now you can launch using dragon
-`$ dragon launch.py`
+`$ dragon miniapp_mpi.py`
 
 > [!NOTE]  
 > DRAGON assumes it is launched via SLURM and will use SLURM environment variables.
