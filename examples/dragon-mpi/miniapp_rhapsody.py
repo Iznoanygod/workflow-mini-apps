@@ -23,25 +23,17 @@ async def workflow(cfg):
     logger = logging.getLogger(__name__)
     init_default_logger(logging.DEBUG)
 
-    # Create Dragon Batch backend (1 nodes with 32 workers)
-    nodes = 1
     mp.set_start_method("dragon")
-    backend = await DragonExecutionBackendV3(
-        num_workers=nodes * mp.cpu_count(),
-        disable_background_batching=False,
-    )
+    backend = await DragonExecutionBackendV3()
     flow = await WorkflowEngine.create(backend=backend)
     
-    #MPI.Init()
     os.makedirs("./input", exist_ok=True)
     os.makedirs("./output", exist_ok=True)
     kern.writeNonMPI(num_bytes=64, data_root_dir="./input")
 
     s1 = cfg["stage1"]
     @flow.function_task
-    async def stage1(task_backend_specific_kwargs={
-        "process_templates": [(2, {}), (2, {})] 
-    }, *args):
+    async def stage1(task_description={'ranks': s1['ranks'], 'type': 'mpi'}, *args):
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
         import mpi4py
         from mpi4py import MPI
@@ -56,11 +48,11 @@ async def workflow(cfg):
         device = s1["device"]
         matmul_dim = s1["matmul_dim"]
         
-        #kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
+        kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
         kern.generateRandomNumber(device=device, size=matmul_dim)
         for j in range(steps):
             kern.matMulSimple2D(device=device, size=matmul_dim)
-        #kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
+        kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
         logger.info(f"Finished stage 1...")
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
         return random.random()
@@ -83,11 +75,11 @@ async def workflow(cfg):
         device = s2["device"]
         matmul_dim = s2["matmul_dim"]
 
-        #kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
+        kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
         kern.generateRandomNumber(device=device, size=matmul_dim)
         for _ in range(steps):
             kern.matMulSimple2D(device=device, size=matmul_dim)
-        #kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
+        kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
         logger.info(f"Finished stage 2...")
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
         return random.random()
@@ -109,13 +101,13 @@ async def workflow(cfg):
         copy_size = s3["data_copy_size_bytes"]
         matmul_dim = s3["matmul_dim"]
 
-        #kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
+        kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
         kern.dataCopyH2D(data_size=copy_size)
         for i in range(steps):
             kern.matMulSimple2D(device="gpu", size=matmul_dim)
             kern.matMulSimple2D(device="cpu", size=matmul_dim)
         kern.dataCopyH2D(data_size=copy_size)
-        #kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
+        kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
         logger.info(f"Finished stage 3...")
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
         return random.random()
@@ -138,13 +130,13 @@ async def workflow(cfg):
         matmul_dim = s4["matmul_dim"]
 
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
-        #kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
+        kern.readWithMPI(num_bytes=read_size, data_root_dir="./input")
         kern.dataCopyH2D(data_size=copy_size)
         for i in range(steps):
             kern.matMulSimple2D(device="gpu", size=matmul_dim)
             kern.matMulSimple2D(device="cpu", size=matmul_dim)
         kern.dataCopyH2D(data_size=copy_size)
-        #kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
+        kern.writeWithMPI(num_bytes=write_size, data_root_dir="./output")
         logger.info(f"Finished stage 4...")
         logger.info(time.strftime("%H:%M:%S", time.localtime()))
         return random.random()
